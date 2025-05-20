@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% if error_message %}
+  <div class="alert alert-danger" role="alert">
+    {{ error_message }}
+  </div>
+{% endif %}
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Registration Portal</title>
@@ -184,412 +190,703 @@
             
             <!-- 1. Personal Info -->
             <div class="mb-4">
-                <h4><i class="bi bi-person-vcard"></i> Personal Information</h4>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">First Name *</label>
-                        <input type="text" name="first_name" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Middle Name</label>
-                        <input type="text" name="middle_name" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Last Name *</label>
-                        <input type="text" name="last_name" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Date of Birth</label>
-                        <input type="date" name="date_of_birth" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Gender</label>
-                        <select name="gender" class="form-select">
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Non-Binary">Non-Binary</option>
-                            <option value="Prefer Not to Say">Prefer Not to Say</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Nationality</label>
-                        <input type="text" name="nationality" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Phone Number *</label>
-                        <input type="tel" name="phone" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Email Address *</label>
-                        <input type="email" name="email" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">LinkedIn Profile(optional)</label>
-                        <input type="url" name="linkedin" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Other Social Profiles(optional)</label>
-                        <input type="url" name="linkedin" class="form-control">
-                    </div>
-                </div>
-            </div>
+    <h4><i class="bi bi-person-vcard"></i> Personal Information</h4>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">First Name *</label>
+            <input type="text" name="first_name" class="form-control" value="{{ first_name }}" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Middle Name</label>
+            <input type="text" name="middle_name" class="form-control" value="{{ middle_name }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Last Name *</label>
+            <input type="text" name="last_name" class="form-control" value="{{ last_name }}" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="form-control" value="{{ date_of_birth }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Gender</label>
+            <select name="gender" class="form-select">
+                <option value="Male" {% if gender == 'Male' %} selected {% endif %}>Male</option>
+                <option value="Female" {% if gender == 'Female' %} selected {% endif %}>Female</option>
+                <option value="Non-Binary" {% if gender == 'Non-Binary' %} selected {% endif %}>Non-Binary</option>
+                <option value="Prefer Not to Say" {% if gender == 'Prefer Not to Say' %} selected {% endif %}>Prefer Not to Say</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Nationality</label>
+            <input type="text" name="nationality" class="form-control" value="{{ nationality }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Phone Number *</label>
+            <input type="tel" name="phone" class="form-control" value="{{ phone }}" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Email Address *</label>
+            <input type="email" name="email" class="form-control" value="{{ email }}" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">LinkedIn Profile (optional)</label>
+            <input type="url" name="linkedin" class="form-control" value="{{ linkedin }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Other Social Profiles (optional)</label>
+            <input type="url" name="other_social" class="form-control" value="{{ other_social }}">
+        </div>
+    </div>
+</div>
 
-            <!-- 2. Address -->
-            <div class="mb-4">
-                <h4><i class="bi bi-geo-alt"></i> Address Information</h4>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Current Address *</label>
-                        <input type="text" name="current_address" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Permanent Address</label>
-                        <input type="text" name="permanent_address" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">City *</label>
-                        <input type="text" name="city" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">State/Province</label>
-                        <input type="text" name="state" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Country *</label>
-                        <input type="text" name="country" class="form-control" required>
-                    </div>
-                </div>
-            </div>
+           <!-- 2. Address -->
+<div class="mb-4">
+  <h4><i class="bi bi-geo-alt"></i> Address Information</h4>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Current Address *</label>
+      <input type="text" name="current_address" class="form-control" value="{{ current_address }}" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Permanent Address</label>
+      <input type="text" name="permanent_address" class="form-control" value="{{ permanent_address }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">City *</label>
+      <input type="text" name="city" class="form-control" value="{{ city }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">State/Province</label>
+      <select name="state" id="stateSelect" class="form-select">
+        <option value="" disabled selected>Select State/Province</option>
+        <option value="Central Province" {% if state == 'Central Province' %}selected{% endif %}>Central Province</option>
+        <option value="Copperbelt Province" {% if state == 'Copperbelt Province' %}selected{% endif %}>Copperbelt Province</option>
+        <option value="Eastern Province" {% if state == 'Eastern Province' %}selected{% endif %}>Eastern Province</option>
+        <option value="Luapula Province" {% if state == 'Luapula Province' %}selected{% endif %}>Luapula Province</option>
+        <option value="Lusaka Province" {% if state == 'Lusaka Province' %}selected{% endif %}>Lusaka Province</option>
+        <option value="Muchinga Province" {% if state == 'Muchinga Province' %}selected{% endif %}>Muchinga Province</option>
+        <option value="Northern Province" {% if state == 'Northern Province' %}selected{% endif %}>Northern Province</option>
+        <option value="North-Western Province" {% if state == 'North-Western Province' %}selected{% endif %}>North-Western Province</option>
+        <option value="Southern Province" {% if state == 'Southern Province' %}selected{% endif %}>Southern Province</option>
+        <option value="Western Province" {% if state == 'Western Province' %}selected{% endif %}>Western Province</option>
+        <option value="Other" {% if state not in [
+          'Central Province', 'Copperbelt Province', 'Eastern Province', 'Luapula Province',
+          'Lusaka Province', 'Muchinga Province', 'Northern Province', 'North-Western Province',
+          'Southern Province', 'Western Province', ''
+        ] %}selected{% endif %}>Other</option>
+      </select>
+      <!-- Input for custom State/Province when Other is selected -->
+      <input type="text" name="state_other" id="stateOtherInput" class="form-control mt-2" placeholder="Enter your state/province"
+        style="display: none;" value="{% if state not in [
+          'Central Province', 'Copperbelt Province', 'Eastern Province', 'Luapula Province',
+          'Lusaka Province', 'Muchinga Province', 'Northern Province', 'North-Western Province',
+          'Southern Province', 'Western Province', ''
+        ] %}{{ state }}{% endif %}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Country *</label>
+      <select name="country" id="countrySelect" class="form-select" required>
+        <option value="" disabled selected>Select Country</option>
+        <option value="Zambia" {% if country == 'Zambia' %}selected{% endif %}>Zambia</option>
+        <option value="Other" {% if country != 'Zambia' and country != '' %}selected{% endif %}>Other</option>
+      </select>
+      <!-- Input for custom Country when Other is selected -->
+      <input type="text" name="country_other" id="countryOtherInput" class="form-control mt-2" placeholder="Enter your country"
+        style="display: none;" value="{% if country != 'Zambia' and country != '' %}{{ country }}{% endif %}" required>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Toggle custom State/Province input
+  const stateSelect = document.getElementById('stateSelect');
+  const stateOtherInput = document.getElementById('stateOtherInput');
+
+  function toggleStateOther() {
+    if (stateSelect.value === 'Other') {
+      stateOtherInput.style.display = 'block';
+      stateOtherInput.required = true;
+    } else {
+      stateOtherInput.style.display = 'none';
+      stateOtherInput.required = false;
+      stateOtherInput.value = '';
+    }
+  }
+  stateSelect.addEventListener('change', toggleStateOther);
+  // Initial toggle on page load
+  toggleStateOther();
+
+  // Toggle custom Country input
+  const countrySelect = document.getElementById('countrySelect');
+  const countryOtherInput = document.getElementById('countryOtherInput');
+
+  function toggleCountryOther() {
+    if (countrySelect.value === 'Other') {
+      countryOtherInput.style.display = 'block';
+      countryOtherInput.required = true;
+    } else {
+      countryOtherInput.style.display = 'none';
+      countryOtherInput.required = false;
+      countryOtherInput.value = '';
+    }
+  }
+  countrySelect.addEventListener('change', toggleCountryOther);
+  // Initial toggle on page load
+  toggleCountryOther();
+</script>
+
 
             <!-- 3. Career Objective -->
-            <div class="mb-4">
-                <h4><i class="bi bi-bullseye"></i> Career Objective</h4>
-                <select name="career_objective" class="form-select">
-                    <option value="" selected disabled>Select your career objective</option>
-                    <option value="Internship">Internship</option>
-                    <option value="Job Placement">Job Placement</option>
-                    <option value="Mentorship">Mentorship</option>
-                    <option value="Coaching program">Coaching Program</option>
-                </select>
-            </div>
+           <div class="mb-4">
+    <h4><i class="bi bi-bullseye"></i> Career Objective</h4>
+    <select name="career_objective" class="form-select">
+        <option value="" selected disabled>Select your career objective</option>
+        <option value="Internship" {% if career_objective == 'Internship' %}selected{% endif %}>Internship</option>
+        <option value="Job Placement" {% if career_objective == 'Job Placement' %}selected{% endif %}>Job Placement</option>
+        <option value="Mentorship" {% if career_objective == 'Mentorship' %}selected{% endif %}>Mentorship</option>
+        <option value="Coaching Program" {% if career_objective == 'Coaching Program' %}selected{% endif %}>Coaching Program</option>
+    </select>
+</div>
+
 
             <!-- 4. Educational Background -->
             <div class="mb-4">
-                <h4><i class="bi bi-book"></i> Educational Background</h4>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Highest Level of Education *</label>
-                        <select name="highesteducation" class="form-select" required>
-                            <option value="" selected disabled>Select highest education</option>
-                            <option value="High School">High School</option>
-                            <option value="Bachelor's Degree">Bachelor's Degree</option>
-                            <option value="Master's Degree">Master's Degree</option>
-                            <option value="PhD">PhD</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Field of Study *</label>
-                        <input type="text" name="field_of_study" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Institution Name *</label>
-                        <input type="text" name="institution_name" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Start Date *</label>
-                        <input type="date" name="edu_start_date" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">End Date (or expected)</label>
-                        <input type="date" name="edu_end_date" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">GPA/Grade (if applicable)</label>
-                        <input type="text" name="gpa" class="form-control">
-                    </div>
-                </div>
-            </div>
+    <h4><i class="bi bi-book"></i> Educational Background</h4>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Highest Level of Education *</label>
+            <select name="education_level" class="form-select" required>
+                <option value="" selected disabled>Select highest education</option>
+                <option value="High School" {% if education and education.education_level == 'High School' %}selected{% endif %}>High School</option>
+                <option value="Bachelor's Degree" {% if education and education.education_level == "Bachelor's Degree" %}selected{% endif %}>Bachelor's Degree</option>
+                <option value="Master's Degree" {% if education and education.education_level == "Master's Degree" %}selected{% endif %}>Master's Degree</option>
+                <option value="PhD" {% if education and education.education_level == 'PhD' %}selected{% endif %}>PhD</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Field of Study *</label>
+            <input type="text" name="field_of_study" class="form-control" required value="{{ education.field_of_study if education else '' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Institution Name *</label>
+            <input type="text" name="institution_name" class="form-control" required value="{{ education.institution_name if education else '' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Start Date *</label>
+            <input type="date" name="edu_start_date" class="form-control" required value="{{ education.edu_start_date if education else '' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">End Date (or expected)</label>
+            <input type="date" name="edu_end_date" class="form-control" value="{{ education.edu_end_date if education else '' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">GPA/Grade (if applicable)</label>
+            <input type="text" name="gpa" class="form-control" value="{{ education.gpa if education else '' }}">
+        </div>
+    </div>
+</div>
+
 
             <!-- 5. Work Experience -->
             <div class="mb-4">
-                <h4><i class="bi bi-briefcase"></i> Work Experience</h4>
-                <div id="workexp-container">
-                    <div class="section-relative">
-                        <button class="delete-btn" onclick="deleteSection(this, 'workexp')">×</button>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Job Title</label>
-                                <input type="text" name="job_title[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Company Name</label>
-                                <input type="text" name="company_name[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Industry</label>
-                                <input type="text" name="industry[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Start Date</label>
-                                <input type="date" name="work_start_date[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">End Date</label>
-                                <input type="date" name="work_end_date[]" class="form-control">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Responsibilities</label>
-                                <textarea name="responsibilities[]" class="form-control" rows="3"></textarea>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Achievements(optional)</label>
-                                <textarea name="achievements[]" class="form-control" rows="3"></textarea>
-                            </div>
+    <h4><i class="bi bi-briefcase"></i> Work Experience</h4>
+    <div id="workexp-container">
+        {% if work_experience %}
+            {% for work in work_experience %}
+                <div class="section-relative">
+                    <button class="delete-btn" onclick="deleteSection(this, 'workexp')">×</button>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Job Title</label>
+                            <input type="text" name="job_title[]" class="form-control" value="{{ work.job_title }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" name="company_name[]" class="form-control" value="{{ work.company_name }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Industry</label>
+                            <input type="text" name="industry[]" class="form-control" value="{{ work.industry }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="work_start_date[]" class="form-control" value="{{ work.work_start_date }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="work_end_date[]" class="form-control" value="{{ work.work_end_date }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Responsibilities</label>
+                            <textarea name="responsibilities[]" class="form-control" rows="3">{{ work.responsibilities }}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Achievements (optional)</label>
+                            <textarea name="achievements[]" class="form-control" rows="3">{{ work.achievements }}</textarea>
                         </div>
                     </div>
                 </div>
-                <button type="button" id="add-workexp" class="btn btn-secondary mt-2">
-                    <i class="bi bi-plus-circle"></i> Add Work Experience
-                </button>
+            {% endfor %}
+        {% else %}
+            <div class="section-relative">
+                <button class="delete-btn" onclick="deleteSection(this, 'workexp')">×</button>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" name="job_title[]" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" name="company_name[]" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Industry</label>
+                        <input type="text" name="industry[]" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" name="work_start_date[]" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">End Date</label>
+                        <input type="date" name="work_end_date[]" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Responsibilities</label>
+                        <textarea name="responsibilities[]" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Achievements (optional)</label>
+                        <textarea name="achievements[]" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
             </div>
+        {% endif %}
+    </div>
+    <button type="button" id="add-workexp" class="btn btn-secondary mt-2">
+        <i class="bi bi-plus-circle"></i> Add Work Experience
+    </button>
+</div>
+
 
             <!-- 6. Skills -->
             <div class="mb-4">
-                <h4><i class="bi bi-tools"></i> Skills</h4>
-                <div id="skill-container">
-                    <div class="section-relative">
-                        <button class="delete-btn" onclick="deleteSection(this, 'skill')">×</button>
-                        <div class="row g-3">
-                            <div class="col-md-5">
-                                <label class="form-label">Skill Name</label>
-                                <input type="text" name="skill_name[]" class="form-control">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Proficiency Level</label>
-                                <select name="level[]" class="form-select">
-                                    <option value="Beginner">Beginner</option>
-                                    <option value="Intermediate">Intermediate</option>
-                                    <option value="Advanced">Advanced</option>
-                                    <option value="Expert">Expert</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Years of Experience</label>
-                                <input type="number" name="skill_years[]" class="form-control" min="0" step="0.5">
-                            </div>
+    <h4><i class="bi bi-tools"></i> Skills</h4>
+    <div id="skill-container">
+        {% if skills %}
+            {% for skill in skills %}
+                <div class="section-relative">
+                    <button class="delete-btn" onclick="deleteSection(this, 'skill')">×</button>
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Skill Name</label>
+                            <input type="text" name="skill_name[]" class="form-control" value="{{ skill.skill_name }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Proficiency Level</label>
+                            <select name="skill_level[]" class="form-select">
+                                <option value="Beginner" {% if skill.skill_level == 'Beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="Intermediate" {% if skill.skill_level == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                                <option value="Advanced" {% if skill.skill_level == 'Advanced' %}selected{% endif %}>Advanced</option>
+                                <option value="Expert" {% if skill.skill_level == 'Expert' %}selected{% endif %}>Expert</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Years of Experience</label>
+                            <input type="number" name="skill_years[]" class="form-control" min="0" step="0.5" value="{{ skill.skill_years }}">
                         </div>
                     </div>
                 </div>
-                <button type="button" id="add-skill" class="btn btn-secondary mt-2">
-                    <i class="bi bi-plus-circle"></i> Add Skill
-                </button>
+            {% endfor %}
+        {% else %}
+            <div class="section-relative">
+                <button class="delete-btn" onclick="deleteSection(this, 'skill')">×</button>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Skill Name</label>
+                        <input type="text" name="skill_name[]" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Proficiency Level</label>
+                        <select name="skill_level[]" class="form-select">
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                            <option value="Expert">Expert</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Years of Experience</label>
+                        <input type="number" name="skill_years[]" class="form-control" min="0" step="0.5">
+                    </div>
+                </div>
             </div>
+        {% endif %}
+    </div>
+    <button type="button" id="add-skill" class="btn btn-secondary mt-2">
+        <i class="bi bi-plus-circle"></i> Add Skill
+    </button>
+</div>
+
 
             <!-- 7. Certifications -->
             <div class="mb-4">
-                <h4><i class="bi bi-award"></i> Certifications and Training</h4>
-                <div id="cert-container">
-                    <div class="section-relative">
-                        <button class="delete-btn" onclick="deleteSection(this, 'cert')">×</button>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Certification/Training Name</label>
-                                <input type="text" name="cert_name[]" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Issuing Organization</label>
-                                <input type="text" name="cert_org[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Issue Date</label>
-                                <input type="date" name="cert_issue_date[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Expiry Date</label>
-                                <input type="date" name="cert_expiry_date[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Credential ID (if any)</label>
-                                <input type="text" name="cert_id[]" class="form-control">
-                            </div>
+    <h4><i class="bi bi-award"></i> Certifications and Training</h4>
+    <div id="cert-container">
+        {% if certifications %}
+            {% for cert in certifications %}
+                <div class="section-relative">
+                    <button class="delete-btn" onclick="deleteSection(this, 'cert')">×</button>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Certification/Training Name</label>
+                            <input type="text" name="cert_name[]" class="form-control" value="{{ cert.cert_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Issuing Organization</label>
+                            <input type="text" name="cert_org[]" class="form-control" value="{{ cert.cert_org }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Issue Date</label>
+                            <input type="date" name="cert_issue_date[]" class="form-control" value="{{ cert.cert_issue_date }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="date" name="cert_expiry_date[]" class="form-control" value="{{ cert.cert_expiry_date }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Credential ID (if any)</label>
+                            <input type="text" name="cert_id[]" class="form-control" value="{{ cert.cert_id }}">
                         </div>
                     </div>
                 </div>
-                <button type="button" id="add-cert" class="btn btn-secondary mt-2">
-                    <i class="bi bi-plus-circle"></i> Add Certification
-                </button>
+            {% endfor %}
+        {% else %}
+            <div class="section-relative">
+                <button class="delete-btn" onclick="deleteSection(this, 'cert')">×</button>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Certification/Training Name</label>
+                        <input type="text" name="cert_name[]" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Issuing Organization</label>
+                        <input type="text" name="cert_org[]" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Issue Date</label>
+                        <input type="date" name="cert_issue_date[]" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Expiry Date</label>
+                        <input type="date" name="cert_expiry_date[]" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Credential ID (if any)</label>
+                        <input type="text" name="cert_id[]" class="form-control">
+                    </div>
+                </div>
             </div>
+        {% endif %}
+    </div>
+    <button type="button" id="add-cert" class="btn btn-secondary mt-2">
+        <i class="bi bi-plus-circle"></i> Add Certification
+    </button>
+</div>
+
 
             <!-- 8. Languages -->
             <div class="mb-4">
-                <h4><i class="bi bi-translate"></i> Languages</h4>
-                <div id="language-container">
-                    <div class="section-relative">
-                        <button class="delete-btn" onclick="deleteSection(this, 'language')">×</button>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Language</label>
-                                <input type="text" name="language[]" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Proficiency Level</label>
-                                <select name="language_proficiency[]" class="form-select">
-                                    <option value="Basic">Basic</option>
-                                    <option value="Conversational">Conversational</option>
-                                    <option value="Fluent">Fluent</option>
-                                    <option value="Native">Native</option>
-                                </select>
-                            </div>
+    <h4><i class="bi bi-translate"></i> Languages</h4>
+    <div id="language-container">
+        {% if languages %}
+            {% for language in languages %}
+                <div class="section-relative">
+                    <button class="delete-btn" onclick="deleteSection(this, 'language')">×</button>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Language</label>
+                            <input type="text" name="language[]" class="form-control" value="{{ language.language }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Proficiency Level</label>
+                            <select name="language_level[]" class="form-select">
+                                <option value="Basic" {% if language.language_level == 'Basic' %}selected{% endif %}>Basic</option>
+                                <option value="Conversational" {% if language.language_level == 'Conversational' %}selected{% endif %}>Conversational</option>
+                                <option value="Fluent" {% if language.language_level == 'Fluent' %}selected{% endif %}>Fluent</option>
+                                <option value="Native" {% if language.language_level == 'Native' %}selected{% endif %}>Native</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-                <button type="button" id="add-language" class="btn btn-secondary mt-2">
-                    <i class="bi bi-plus-circle"></i> Add Language
-                </button>
+            {% endfor %}
+        {% else %}
+            <div class="section-relative">
+                <button class="delete-btn" onclick="deleteSection(this, 'language')">×</button>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Language</label>
+                        <input type="text" name="language[]" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Proficiency Level</label>
+                        <select name="language_level[]" class="form-select">
+                            <option value="Basic">Basic</option>
+                            <option value="Conversational">Conversational</option>
+                            <option value="Fluent">Fluent</option>
+                            <option value="Native">Native</option>
+                        </select>
+                    </div>
+                </div>
             </div>
+        {% endif %}
+    </div>
+    <button type="button" id="add-language" class="btn btn-secondary mt-2">
+        <i class="bi bi-plus-circle"></i> Add Language
+    </button>
+</div>
+
 
             <!-- 9. Projects -->
             <div class="mb-4">
-                <h4><i class="bi bi-code-square"></i> Projects & Portfolios</h4>
-                <div id="project-container">
-                    <div class="section-relative">
-                        <button class="delete-btn" onclick="deleteSection(this, 'project')">×</button>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Project Title</label>
-                                <input type="text" name="project_title[]" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Role in Project</label>
-                                <input type="text" name="project_role[]" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Technologies Used</label>
-                                <input type="text" name="project_tech[]" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Completion Date</label>
-                                <input type="date" name="project_date[]" class="form-control">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Description</label>
-                                <textarea name="project_desc[]" class="form-control" rows="3"></textarea>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Project URL/Portfolio Link:URL (optional)</label>
-                                <input type="url" name="project_url[]" class="form-control">
-                            </div>
+    <h4><i class="bi bi-code-square"></i> Projects & Portfolios</h4>
+    <div id="project-container">
+        {% if projects %}
+            {% for project in projects %}
+                <div class="section-relative">
+                    <button class="delete-btn" onclick="deleteSection(this, 'project')">×</button>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Project Title</label>
+                            <input type="text" name="project_title[]" class="form-control" value="{{ project.project_title }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Role in Project</label>
+                            <input type="text" name="project_role[]" class="form-control" value="{{ project.project_role }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Technologies Used</label>
+                            <input type="text" name="project_tech[]" class="form-control" value="{{ project.project_tech }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Completion Date</label>
+                            <input type="date" name="project_date[]" class="form-control" value="{{ project.project_date }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="project_desc[]" class="form-control" rows="3">{{ project.project_desc }}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Project URL/Portfolio Link (optional)</label>
+                            <input type="url" name="project_url[]" class="form-control" value="{{ project.project_url }}">
                         </div>
                     </div>
                 </div>
-                <button type="button" id="add-project" class="btn btn-secondary mt-2">
-                    <i class="bi bi-plus-circle"></i> Add Project
-                </button>
+            {% endfor %}
+        {% else %}
+            <div class="section-relative">
+                <button class="delete-btn" onclick="deleteSection(this, 'project')">×</button>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Project Title</label>
+                        <input type="text" name="project_title[]" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role in Project</label>
+                        <input type="text" name="project_role[]" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Technologies Used</label>
+                        <input type="text" name="project_tech[]" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Completion Date</label>
+                        <input type="date" name="project_date[]" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="project_desc[]" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Project URL/Portfolio Link (optional)</label>
+                        <input type="url" name="project_url[]" class="form-control">
+                    </div>
+                </div>
             </div>
+        {% endif %}
+    </div>
+    <button type="button" id="add-project" class="btn btn-secondary mt-2">
+        <i class="bi bi-plus-circle"></i> Add Project
+    </button>
+</div>
+
 
             <!-- 10. References -->
             <div class="mb-4">
-                <h4><i class="bi bi-people"></i> References</h4>
-                <div id="reference-container">
-                    <div class="section-relative">
-                        <button class="delete-btn" onclick="deleteSection(this, 'reference')">×</button>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Referee Name</label>
-                                <input type="text" name="ref_name[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Position</label>
-                                <input type="text" name="ref_position[]" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Company Name</label>
-                                <input type="text" name="ref_company[]" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Contact Information</label>
-                                <input type="text" name="ref_contact[]" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Relationship</label>
-                                <input type="text" name="ref_relation[]" class="form-control">
-                            </div>
+    <h4><i class="bi bi-people"></i> References</h4>
+    <div id="reference-container">
+        {% if references %}
+            {% for reference in references %}
+                <div class="section-relative">
+                    <button class="delete-btn" onclick="deleteSection(this, 'reference')">×</button>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Referee Name</label>
+                            <input type="text" name="ref_name[]" class="form-control" value="{{ reference.ref_name }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Position</label>
+                            <input type="text" name="ref_position[]" class="form-control" value="{{ reference.ref_position }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" name="ref_company[]" class="form-control" value="{{ reference.ref_company }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact Information</label>
+                            <input type="text" name="ref_contact[]" class="form-control" value="{{ reference.ref_contact }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Relationship</label>
+                            <input type="text" name="ref_relation[]" class="form-control" value="{{ reference.ref_relation }}">
                         </div>
                     </div>
                 </div>
-                <button type="button" id="add-reference" class="btn btn-secondary mt-2">
-                    <i class="bi bi-plus-circle"></i> Add Reference
-                </button>
-            </div>
-
-            <!-- 11. Additional Information -->
-            <div class="mb-4">
-                <h4><i class="bi bi-info-circle"></i> Additional Information</h4>
+            {% endfor %}
+        {% else %}
+            <div class="section-relative">
+                <button class="delete-btn" onclick="deleteSection(this, 'reference')">×</button>
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">Availability for Work</label>
-                        <select name="Availability" class="form-select">
-                            <option value="" selected disabled>Select availability</option>
-                            <option value="Immediate">Immediate</option>
-                            <option value="Within 1 Month">Within 1 Month</option>
-                            <option value="Flexible">Flexible</option>
-                            <option value="Other">Other</option>
-                        </select>
+                        <label class="form-label">Referee Name</label>
+                        <input type="text" name="ref_name[]" class="form-control">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Preferred Job Roles</label>
-                        <input type="text" name="preferred_roles" class="form-control">
+                        <label class="form-label">Position</label>
+                        <input type="text" name="ref_position[]" class="form-control">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Preferred Location(s)</label>
-                        <input type="text" name="preferred_locations" class="form-control">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" name="ref_company[]" class="form-control">
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Preferred Employment Type</label>
-                        <select name="Employment" class="form-select">
-                            <option value="" selected disabled>Select employment type</option>
-                            <option value="Full-Time">Full-Time</option>
-                            <option value="Part-Time">Part-Time</option>
-                            <option value="Freelance">Freelance</option>
-                            <option value="Internship">Internship</option>
-                        </select>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Information</label>
+                        <input type="text" name="ref_contact[]" class="form-control">
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Expected Salary Range(optional)</label>
-                        <input type="text" name="salary_range" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Willing to Relocate?</label>
-                        <select name="relocate" class="form-select">
-                            <option value="" selected disabled>Select option</option>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                            <option value="Maybe">Maybe</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Additional Notes</label>
-                        <textarea name="additional_notes" class="form-control" rows="3"></textarea>
+                    <div class="col-md-6">
+                        <label class="form-label">Relationship</label>
+                        <input type="text" name="ref_relation[]" class="form-control">
                     </div>
                 </div>
             </div>
+        {% endif %}
+    </div>
+    <button type="button" id="add-reference" class="btn btn-secondary mt-2">
+        <i class="bi bi-plus-circle"></i> Add Reference
+    </button>
+</div>
+
+
+            <!-- 11. Additional Information -->
+           <div class="mb-4">
+  <h4><i class="bi bi-info-circle"></i> Additional Information</h4>
+  <div class="row g-3">
+    
+    <!-- Availability -->
+    <div class="col-md-4">
+      <label class="form-label">Availability for Work</label>
+      <select name="availability" class="form-select">
+        <option value="" disabled {% if not availability %}selected{% endif %}>Select availability</option>
+        <option value="Immediate" {% if availability == 'Immediate' %}selected{% endif %}>Immediate</option>
+        <option value="Within 1 Month" {% if availability == 'Within 1 Month' %}selected{% endif %}>Within 1 Month</option>
+        <option value="Flexible" {% if availability == 'Flexible' %}selected{% endif %}>Flexible</option>
+        <option value="Other" {% if availability == 'Other' %}selected{% endif %}>Other</option>
+      </select>
+    </div>
+
+    <!-- Preferred Job Roles -->
+    <div class="col-md-4">
+      <label class="form-label">Preferred Job Roles</label>
+      <input type="text" name="preferred_roles" class="form-control" value="{{ preferred_roles or '' }}">
+    </div>
+
+    <!-- Preferred Locations -->
+    <div class="col-md-4">
+      <label class="form-label">Preferred Location(s)</label>
+      <input type="text" name="preferred_locations" class="form-control" value="{{ preferred_locations or '' }}">
+    </div>
+
+    <!-- Employment Type -->
+    <div class="col-md-4">
+      <label class="form-label">Preferred Employment Type</label>
+      <select name="employment_type" class="form-select">
+        <option value="" disabled {% if not employment %}selected{% endif %}>Select employment type</option>
+        <option value="Full-Time" {% if employment_type == 'Full-Time' %}selected{% endif %}>Full-Time</option>
+        <option value="Part-Time" {% if employment_type == 'Part-Time' %}selected{% endif %}>Part-Time</option>
+        <option value="Freelance" {% if employment_type == 'Freelance' %}selected{% endif %}>Freelance</option>
+        <option value="Internship" {% if employment_type == 'Internship' %}selected{% endif %}>Internship</option>
+      </select>
+    </div>
+
+    <!-- Expected Salary Range -->
+    <div class="col-md-4">
+      <label class="form-label">Expected Salary Range (optional)</label>
+      <input type="text" name="salary_range" class="form-control" value="{{ salary_range or '' }}">
+    </div>
+
+    <!-- Willing to Relocate -->
+    <div class="col-md-4">
+      <label class="form-label">Willing to Relocate?</label>
+      <select name="relocate" class="form-select">
+        <option value="" disabled {% if not relocate %}selected{% endif %}>Select option</option>
+        <option value="Yes" {% if relocate == 'Yes' %}selected{% endif %}>Yes</option>
+        <option value="No" {% if relocate == 'No' %}selected{% endif %}>No</option>
+        <option value="Maybe" {% if relocate == 'Maybe' %}selected{% endif %}>Maybe</option>
+      </select>
+    </div>
+
+    <!-- Additional Notes -->
+    <div class="col-12">
+      <label class="form-label">Additional Notes</label>
+      <textarea name="additional_notes" class="form-control" rows="3">{{ additional_notes or '' }}</textarea>
+    </div>
+
+  </div>
+</div>
+
 
             <!-- 12. Documents -->
             <div class="mb-4">
-                <h4><i class="bi bi-file-earmark"></i> Metadata</h4>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Upload NRC/Student ID (PDF/JPEG)</label>
-                        <input type="file" name="id_doc" class="form-control" accept=".pdf,.jpg,.png">
-                        <small class="text-muted">NRC/Passport/Student ID</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Upload Profile Picture(optional)</label>
-                        <input type="file" name="profile_pic" class="form-control" accept=".jpg,.png,.jpeg">
-                        <small class="text-muted">Optional</small>
-                    </div>
-                </div>
-            </div>
+  <h4><i class="bi bi-file-earmark"></i> Metadata</h4>
+  <div class="row g-3">
+    
+    <!-- Upload NRC/Student ID -->
+    <div class="col-md-6">
+      <label class="form-label">Upload NRC/Student ID (PDF/JPEG)</label>
+      <input type="file" name="id_doc" class="form-control" accept=".pdf,.jpg,.png">
+      <small class="text-muted">NRC/Passport/Student ID</small>
+      {% if id_doc %}
+        <div class="mt-2">
+          <a href="{{ url_for('static', filename='uploads/' + id_doc) }}" target="_blank">View existing file</a>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Upload Profile Picture -->
+    <div class="col-md-6">
+      <label class="form-label">Upload Profile Picture (optional)</label>
+      <input type="file" name="profile_pic" class="form-control" accept=".jpg,.png,.jpeg">
+      <small class="text-muted">Optional</small>
+      {% if profile_pic %}
+        <div class="mt-2">
+          <img src="{{ url_for('static', filename='uploads/' + profile_pic) }}" alt="Profile Picture" class="img-thumbnail" width="100">
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
 
             <!-- Consent and Submit -->
             <div class="mb-4 form-check">

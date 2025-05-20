@@ -3,20 +3,18 @@ import psycopg2
 import os
 
 app = Flask(__name__)
-app.secret_key = 'your_super_secret_key'  # Change this in production!
+app.secret_key = 'your_super_secret_key'
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Neon PostgreSQL config
 DB_HOST = "ep-icy-surf-abajt2qk-pooler.eu-west-2.aws.neon.tech"
 DB_NAME = "neondb"
 DB_USER = "neondb_owner"
 DB_PASS = "npg_iuK42OmEkMrT"
 DB_SSLMODE = "require"
 
-# --- Database connection ---
 def get_db_connection():
     return psycopg2.connect(
         host=DB_HOST,
@@ -26,67 +24,256 @@ def get_db_connection():
         sslmode=DB_SSLMODE
     )
 
-# --- Routes ---
 @app.route('/')
 def home():
     return render_template('home.html')
 
+@app.route('/submission-status')
+def submission_status():
+    status = request.args.get('status')
+    error_message = request.args.get('msg')
+    return render_template('submission_status.html', status=status, error_message=error_message)
 
 @app.route('/add-client', methods=['GET', 'POST'])
-def add_client():
+@app.route('/edit-client/<int:client_id>', methods=['GET', 'POST'])
+def add_client(client_id=None):
+    conn = None
+    client_data = None
+
+    if request.method == 'GET' and client_id is not None:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM clients WHERE id = %s", (client_id,))
+            client_row = cur.fetchone()
+            if client_row:
+                columns = [desc[0] for desc in cur.description]
+                client_data = dict(zip(columns, client_row))
+            cur.close()
+        except Exception as e:
+            print(f"❌ ERROR FETCHING CLIENT: {str(e)}")
+        finally:
+            if conn:
+                conn.close()
+
     if request.method == 'POST':
-        data = request.form
-        files = request.files
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
 
-        conn = get_db_connection()
-        cur = conn.cursor()
+            # If editing, fetch old filenames to keep if no new upload
+            old_id_doc = None
+            old_profile_pic = None
+            if client_id:
+                cur.execute("SELECT id_doc, profile_pic FROM clients WHERE id = %s", (client_id,))
+                old_files = cur.fetchone()
+                if old_files:
+                    old_id_doc, old_profile_pic = old_files
 
-        cur.execute(""" 
-            INSERT INTO clients (
-                first_name, middle_name, last_name, date_of_birth, gender,
-                nationality, phone, email, linkedin, other_social,
-                current_address, permanent_address, city, state, country,
-                career_objective, education_level, field_of_study, institution_name,
-                edu_start_date, edu_end_date, gpa,
-                job_title, company_name, industry, work_start_date, work_end_date,
-                responsibilities, achievements,
-                skill_name, skill_level, skill_years,
-                cert_name, cert_org, cert_issue_date, cert_expiry_date,
-                language, language_level,
-                project_title, project_desc, project_role, project_tech, project_date, project_url,
-                ref_name, ref_position, ref_company, ref_contact, ref_relation,
-                availability, preferred_roles, preferred_locations, employment_type, salary_range,
-                hobbies, relocate,
-                id_doc, profile_pic
-            ) VALUES (
-                %(first_name)s, %(middle_name)s, %(last_name)s, %(date_of_birth)s, %(gender)s,
-                %(nationality)s, %(phone)s, %(email)s, %(linkedin)s, %(other_social)s,
-                %(current_address)s, %(permanent_address)s, %(city)s, %(state)s, %(country)s,
-                %(career_objective)s, %(education_level)s, %(field_of_study)s, %(institution_name)s,
-                %(edu_start_date)s, %(edu_end_date)s, %(gpa)s,
-                %(job_title)s, %(company_name)s, %(industry)s, %(work_start_date)s, %(work_end_date)s,
-                %(responsibilities)s, %(achievements)s,
-                %(skill_name)s, %(skill_level)s, %(skill_years)s,
-                %(cert_name)s, %(cert_org)s, %(cert_issue_date)s, %(cert_expiry_date)s,
-                %(language)s, %(language_level)s,
-                %(project_title)s, %(project_desc)s, %(project_role)s, %(project_tech)s, %(project_date)s, %(project_url)s,
-                %(ref_name)s, %(ref_position)s, %(ref_company)s, %(ref_contact)s, %(ref_relation)s,
-                %(availability)s, %(preferred_roles)s, %(preferred_locations)s, %(employment_type)s, %(salary_range)s,
-                %(hobbies)s, %(relocate)s,
-                %(id_doc)s, %(profile_pic)s
+            # Save new files or keep old ones
+            id_doc = save_file(request.files.get('id_doc')) or old_id_doc
+            profile_pic = save_file(request.files.get('profile_pic')) or old_profile_pic
+
+            state = request.form.get('state')
+            state_other = request.form.get('state_other')
+            country = request.form.get('country')
+            country_other_ = request.form.get('country_other')
+
+            final_state = state_other if state == "other" else state
+            final_country = country_other_ if country == "other" else country
+            data = {
+                'first_name': request.form.get('first_name'),
+                'middle_name': request.form.get('middle_name'),
+                'last_name': request.form.get('last_name'),
+                'date_of_birth': request.form.get('date_of_birth'),
+                'gender': request.form.get('gender'),
+                'nationality': request.form.get('nationality'),
+                'phone': request.form.get('phone'),
+                'email': request.form.get('email'),
+                'linkedin': request.form.get('linkedin'),
+                'other_social': request.form.get('other_social'),
+                'current_address': request.form.get('current_address'),
+                'permanent_address': request.form.get('permanent_address'),
+                'city': request.form.get('city'),
+                'state': final_state,
+                'country': final_country,
+                'career_objective': request.form.get('career_objective'),
+                'education_level': request.form.get('education_level'),
+                'field_of_study': request.form.get('field_of_study'),
+                'institution_name': request.form.get('institution_name'),
+                'edu_start_date': request.form.get('edu_start_date'),
+                'edu_end_date': request.form.get('edu_end_date'),
+                'gpa': request.form.get('gpa'),
+                'availability': request.form.get('availability'),
+                'preferred_roles': request.form.get('preferred_roles'),
+                'preferred_locations': request.form.get('preferred_locations'),
+                'employment_type': request.form.get('employment_type'),
+                'salary_range': request.form.get('salary_range'),
+                'relocate': request.form.get('relocate'),
+                'additional_notes': request.form.get('additional_notes'),
+                'id_doc': id_doc,
+                'profile_pic': profile_pic
+            }
+
+            if client_id:  
+                # UPDATE existing client
+                cur.execute("""
+                    UPDATE clients SET
+                        first_name=%(first_name)s, middle_name=%(middle_name)s, last_name=%(last_name)s,
+                        date_of_birth=%(date_of_birth)s, gender=%(gender)s, nationality=%(nationality)s,
+                        phone=%(phone)s, email=%(email)s, linkedin=%(linkedin)s, other_social=%(other_social)s,
+                        current_address=%(current_address)s, permanent_address=%(permanent_address)s,
+                        city=%(city)s, state=%(state)s, country=%(country)s, career_objective=%(career_objective)s,
+                        education_level=%(education_level)s, field_of_study=%(field_of_study)s,
+                        institution_name=%(institution_name)s, edu_start_date=%(edu_start_date)s, edu_end_date=%(edu_end_date)s,
+                        gpa=%(gpa)s, availability=%(availability)s, preferred_roles=%(preferred_roles)s,
+                        preferred_locations=%(preferred_locations)s, employment_type=%(employment_type)s,
+                        salary_range=%(salary_range)s, relocate=%(relocate)s, additional_notes=%(additional_notes)s,
+                        id_doc=%(id_doc)s, profile_pic=%(profile_pic)s
+                    WHERE id = %(client_id)s
+                """, {**data, 'client_id': client_id})
+
+                # Delete old related entries to replace them
+                cur.execute("DELETE FROM client_work_experience WHERE client_id = %s", (client_id,))
+                cur.execute("DELETE FROM client_skills WHERE client_id = %s", (client_id,))
+                cur.execute("DELETE FROM client_certifications WHERE client_id = %s", (client_id,))
+                cur.execute("DELETE FROM client_languages WHERE client_id = %s", (client_id,))
+                cur.execute("DELETE FROM client_projects WHERE client_id = %s", (client_id,))
+                cur.execute("DELETE FROM client_references WHERE client_id = %s", (client_id,))
+
+                used_id = client_id
+            else:
+                # check if email already exists
+                cur.execute("SELECT id FROM clients WHERE email = %s", (data['email'],))
+                existing_client = cur.fetchone()
+
+                if existing_client:
+                    error_message = "A client with this email already exists."
+                    return render_template('add_client.html', error=error_message, **data)
+
+                else:
+                # INSERT new client
+                 cur.execute("""
+                    INSERT INTO clients (
+                        first_name, middle_name, last_name, date_of_birth, gender, nationality,
+                        phone, email, linkedin, other_social, current_address, permanent_address,
+                        city, state, country, career_objective, education_level, field_of_study,
+                        institution_name, edu_start_date, edu_end_date, gpa, availability, preferred_roles, preferred_locations,
+                        employment_type, salary_range, relocate, id_doc, profile_pic, additional_notes
+                    ) VALUES (
+                        %(first_name)s, %(middle_name)s, %(last_name)s, %(date_of_birth)s, %(gender)s, %(nationality)s,
+                        %(phone)s, %(email)s, %(linkedin)s, %(other_social)s, %(current_address)s, %(permanent_address)s,
+                        %(city)s, %(state)s, %(country)s, %(career_objective)s, %(education_level)s, %(field_of_study)s,
+                        %(institution_name)s, %(edu_start_date)s, %(edu_end_date)s, %(gpa)s, %(availability)s, %(preferred_roles)s, %(preferred_locations)s,
+                        %(employment_type)s, %(salary_range)s, %(relocate)s, %(id_doc)s, %(profile_pic)s, %(additional_notes)s
+                    ) RETURNING id
+                """, data)
+                used_id = cur.fetchone()[0]
+
+            # Insert related data (work experience, skills, etc) for both add and edit
+            work_exps = zip(
+                request.form.getlist('job_title[]'),
+                request.form.getlist('company_name[]'),
+                request.form.getlist('industry[]'),
+                request.form.getlist('work_start_date[]'),
+                request.form.getlist('work_end_date[]'),
+                request.form.getlist('responsibilities[]'),
+                request.form.getlist('achievements[]')
             )
-        """, {
-            **data,
-            "id_doc": save_file(files.get("id_doc")),
-            "profile_pic": save_file(files.get("profile_pic"))
-        })
+            for title, company, industry, start, end, resp, achieve in work_exps:
+                if title.strip():
+                    cur.execute("""
+                        INSERT INTO client_work_experience (
+                            client_id, job_title, company_name, industry,
+                            work_start_date, work_end_date, responsibilities, achievements
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (used_id, title, company, industry, start, end, resp, achieve))
 
-        conn.commit()
-        cur.close()
-        conn.close()
-        return redirect(url_for('home'))
+            skills = zip(
+                request.form.getlist('skill_name[]'),
+                request.form.getlist('skill_level[]'),
+                request.form.getlist('skill_years[]')
+            )
+            for name, level, years in skills:
+                if name.strip():
+                    cur.execute("""
+                        INSERT INTO client_skills (client_id, skill_name, skill_level, skill_years)
+                        VALUES (%s, %s, %s, %s)
+                    """, (used_id, name, level, years))
+
+            certs = zip(
+                request.form.getlist('cert_name[]'),
+                request.form.getlist('cert_org[]'),
+                request.form.getlist('cert_issue_date[]'),
+                request.form.getlist('cert_expiry_date[]')
+            )
+            for name, org, issue, expiry in certs:
+                if name.strip():
+                    cur.execute("""
+                        INSERT INTO client_certifications (client_id, cert_name, cert_org, cert_issue_date, cert_expiry_date)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (used_id, name, org, issue or None, expiry or None))
+
+            langs = zip(
+                request.form.getlist('language[]'),
+                request.form.getlist('language_level[]')
+            )
+            for lang, level in langs:
+                if lang.strip():
+                    cur.execute("""
+                        INSERT INTO client_languages (client_id, language, language_level)
+                        VALUES (%s, %s, %s)
+                    """, (used_id, lang, level))
+
+            projects = zip(
+                request.form.getlist('project_title[]'),
+                request.form.getlist('project_desc[]'),
+                request.form.getlist('project_role[]'),
+                request.form.getlist('project_tech[]'),
+                request.form.getlist('project_date[]'),
+                request.form.getlist('project_url[]')
+            )
+            for title, desc, role, tech, date, url in projects:
+                if title.strip():
+                    cur.execute("""
+                        INSERT INTO client_projects (client_id, project_title, project_desc, project_role, project_tech, project_date, project_url)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, (used_id, title, desc, role, tech, date or None, url))
+
+            refs = zip(
+                request.form.getlist('ref_name[]'),
+                request.form.getlist('ref_position[]'),
+                request.form.getlist('ref_company[]'),
+                request.form.getlist('ref_contact[]'),
+                request.form.getlist('ref_relation[]')
+            )
+            for name, pos, comp, contact, relation in refs:
+                if name.strip():
+                    cur.execute("""
+                        INSERT INTO client_references (client_id, ref_name, ref_position, ref_company, ref_contact, ref_relation)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, (used_id, name, pos, comp, contact, relation))
+
+            conn.commit()
+
+            if client_id:
+                flash("Client updated successfully!", "success")
+            else:
+                flash("Client added successfully!", "success")
+
+            return redirect(url_for('submission_status', status='success'))
+
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            print(f"❌ DATABASE ERROR: {str(e)}")
+
+            error_message = str(e)
+            if "duplicate key value violates unique constraint" in error_message:
+                error_message = "A client with this email already exists."
+            return redirect(url_for('submission_status',  status='error', msg=error_message))
+    return render_template('add_client.html', client=client_data, client_id=client_id)
     
-    return render_template('add_client.html')
 
 
 @app.route('/clients')
@@ -102,7 +289,6 @@ def view_clients():
     conn.close()
     return render_template("view_clients.html", clients=clients)
 
-
 @app.route('/delete-client/<int:id>', methods=['POST'])
 def delete_client(id):
     if not session.get('admin_logged_in'):
@@ -116,15 +302,12 @@ def delete_client(id):
     conn.close()
     return redirect(url_for('view_clients'))
 
-
-# --- Admin Login ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Replace with actual check (e.g., database or env vars)
         if username == 'admin' and password == 'admin123':
             session['admin_logged_in'] = True
             return redirect(url_for('view_clients'))
@@ -133,21 +316,17 @@ def login():
 
     return render_template("login.html")
 
-
 @app.route('/logout')
 def logout():
     session.pop('admin_logged_in', None)
     return redirect(url_for('home'))
 
-
-# --- Helpers ---
 def save_file(file):
     if file and file.filename:
         path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(path)
         return file.filename
     return None
-
 
 if __name__ == '__main__':
     app.run(debug=True)
