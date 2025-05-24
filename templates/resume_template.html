@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume - {{ client[1] }} {{ client[3] }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        h1, h2 { color: #003366; }
+        hr { border: 1px solid #ccc; }
+        .section { margin-bottom: 20px; }
+        .label { font-weight: bold; }
+        p { margin: 4px 0; }
+    </style>
+</head>
+<body>
+    <h1>{{ client[1] }} {% if client[2] %}{{ client[2] }}{% endif %} {{ client[3] }}</h1>
+    <p><strong>Date of Birth:</strong> {{ client[4] }}</p>
+    <p><strong>Gender:</strong> {{ client[5] }}</p>
+    <p><strong>Nationality:</strong> {{ client[6] }}</p>
+    <p><strong>Phone:</strong> {{ client[7] }}</p>
+    <p><strong>Email:</strong> {{ client[8] }}</p>
+    <p><strong>LinkedIn:</strong> {{ client[9] }}</p>
+    <p><strong>Other Social:</strong> {{ client[10] }}</p>
+    <p><strong>Current Address:</strong> {{ client[11] }}</p>
+    <p><strong>Permanent Address:</strong> {{ client[12] }}</p>
+    <p><strong>City:</strong> {{ client[13] }}</p>
+    <p><strong>State:</strong> {{ client[14] }}</p>
+    <p><strong>Country:</strong> {{ client[15] }}</p>
+    <hr>
+
+    <div class="section">
+        <h2>Career Objective</h2>
+        <p>{{ client[16] }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Educational Background</h2>
+        <p><strong>Level:</strong> {{ client[17] }}</p>
+        <p><strong>Field of Study:</strong> {{ client[18] }}</p>
+        <p><strong>Institution:</strong> {{ client[19] }}</p>
+        <p><strong>Duration:</strong> {{ client[20] }} - {{ client[21] }}</p>
+        <p><strong>GPA:</strong> {{ client[22] }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Job Preferences</h2>
+        <p><strong>Availability:</strong> {{ client[23] }}</p>
+        <p><strong>Preferred Roles:</strong> {{ client[24] }}</p>
+        <p><strong>Preferred Locations:</strong> {{ client[25] }}</p>
+        <p><strong>Employment Type:</strong> {{ client[26] }}</p>
+        <p><strong>Salary Range:</strong> {{ client[27] }}</p>
+        <p><strong>Willing to Relocate:</strong> {{ client[28] }}</p>
+    </div>
+
+    {% if client[31] %}
+    <div class="section">
+        <h2>Additional Notes</h2>
+        <p>{{ client[31] }}</p>
+    </div>
+    {% endif %}
+
+    {% if work_experience %}
+    <div class="section">
+        <h2>Work Experience</h2>
+        {% for work in work_experience %}
+        <div style="margin-bottom: 20px;">
+            <p><strong>Job Title:</strong> {{ work[2] }}</p>
+            <p><strong>Company:</strong> {{ work[3] }}</p>
+            <p><strong>Industry:</strong> {{ work[4] }}</p>
+            <p><strong>Duration:</strong> {{ work[5] | format_date }} - 
+                {% if work[6] %}
+                    {{ work[6] | format_date }}
+                {% else %}
+                    Present
+                {% endif %}
+            </p>
+            <p><strong>Responsibilities:</strong> {{ work[7] }}</p>
+            <p><strong>Achievements:</strong> {{ work[8] }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if skills %}
+    <div class="section">
+        <h2>Skills</h2>
+        {% for skill in skills %}
+        <p>
+            <strong>Skill:</strong> {{ skill[2] }}<br>
+            <strong>Level:</strong> {{ skill[3] }}<br>
+            <strong>Years of Experience:</strong> {{ skill[4] }}
+        </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if certifications %}
+    <div class="section">
+        <h2>Certifications and Training</h2>
+        {% for cert in certifications %}
+        <p>
+            <strong>Certification:</strong> {{ cert[2] }}<br>
+            <strong>Organization:</strong> {{ cert[3] }}<br>
+            <strong>Issued On:</strong> {{ cert[4] | default('N/A') }}<br>
+            <strong>Expires On:</strong> {{ cert[5] | default('N/A') }}
+        </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if languages %}
+    <div class="section">
+        <h2>Languages</h2>
+        <ul>
+            {% for lang in languages %}
+            <li><strong>{{ lang[2] }}</strong> — Level: {{ lang[3] }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if projects %}
+    <div class="section">
+        <h2>Projects & Portfolios</h2>
+        {% for proj in projects %}
+        <div style="margin-bottom: 15px;">
+            <p><strong>Title:</strong> {{ proj[2] }}</p>
+            <p><strong>Description:</strong> {{ proj[3] }}</p>
+            <p><strong>Role:</strong> {{ proj[4] }}</p>
+            <p><strong>Technologies:</strong> {{ proj[5] }}</p>
+            <p><strong>Date:</strong> {{ proj[6].strftime('%B %Y') if proj[6] else 'N/A' }}</p>
+            {% if proj[7] %}
+            <p><strong>URL:</strong> <a href="{{ proj[7] }}" target="_blank">{{ proj[7] }}</a></p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if references %}
+    <div class="section">
+        <h2>References</h2>
+        {% for ref in references %}
+        <div style="margin-bottom: 15px;">
+            <p><strong>Name:</strong> {{ ref[2] }}</p>
+            <p><strong>Position:</strong> {{ ref[3] }}</p>
+            <p><strong>Company:</strong> {{ ref[4] }}</p>
+            <p><strong>Contact:</strong> {{ ref[5] }}</p>
+            <p><strong>Relation:</strong> {{ ref[6] }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>

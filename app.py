@@ -1,13 +1,44 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, make_response, Response, render_template, request, redirect, url_for, session, flash
 import psycopg2
 import os
+import bcrypt
+from weasyprint import HTML
+from datetime import datetime
+
+# Hardcoded admin credentials
+ADMIN_USERNAME = "myscape@gmail.com"
+ADMIN_HASHED_PASSWORD = "$2b$12$gdZtv.S7O2xeDLqJMYvm.O0WAYH033wcIqhDIZyi8wXMwtA6/Hmly"
 
 app = Flask(__name__)
-app.secret_key = 'your_super_secret_key'
+app.secret_key = '0c9cc5725e5cdadf1066ced0abe62e41'
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def save_uploaded_file(file, column_name, client_id, cursor):
+    if file:
+        binary_data = file.read()
+        cursor.execute(
+            f"UPDATE clients SET {column_name} = %s WHERE client_id = %s",
+            (psycopg2.Binary(binary_data), client_id)
+        )
+
+@app.route('/upload_files/<int:client_id>', methods=['POST'])
+def upload_files(client_id):
+    profile_pic = request.files.get('profile_pic')
+    id_doc = request.files.get('id_doc')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    save_uploaded_file(profile_pic, 'profile_pic', client_id, cursor)
+    save_uploaded_file(id_doc, 'id_doc', client_id, cursor)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return "Files uploaded successfully"
 
 DB_HOST = "ep-icy-surf-abajt2qk-pooler.eu-west-2.aws.neon.tech"
 DB_NAME = "neondb"
@@ -23,6 +54,103 @@ def get_db_connection():
         password=DB_PASS,
         sslmode=DB_SSLMODE
     )
+
+@app.route('/view_profile_pic/<int:client_id>')
+def view_profile_pic(client_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT profile_pic FROM clients WHERE client_id = %s", (client_id,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if result and result[0]:
+        return Response(result[0], mimetype='image/jpeg')  # or image/png/pdf
+    return "No profile picture found", 404
+
+@app.route('/view_id_doc/<int:client_id>')
+def view_id_doc(client_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id_doc FROM clients WHERE client_id = %s", (client_id,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if result and result[0]:
+        return Response(result[0], mimetype='application/pdf')  # or image/jpeg/png
+    return "No ID document found", 404
+
+
+@app.template_filter('format_date')
+def format_date(value, format='%b %Y'):
+    if not value:
+        return ''
+    if isinstance(value, str):
+        try:
+            value = datetime.strptime(value, '%Y-%m-%d')  # your date format
+        except ValueError:
+            return value
+    return value.strftime(format)
+from psycopg2 import sql
+
+def get_client_full_details(email=None, client_id=None):
+    if not email and not client_id:
+        return None
+
+    # Determine the filter field and its value
+    field = 'email' if email else 'id'
+    value = email if email else client_id
+
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Fetch all matching clients
+            query = sql.SQL("SELECT * FROM clients WHERE {} = %s").format(sql.Identifier(field))
+            cur.execute(query, (value,))
+            clients = cur.fetchall()
+
+            if not clients:
+                return None
+
+            all_data = []
+
+            for client in clients:
+                current_client_id = client[0]  # Assuming client_id is first column
+
+                # Helper to fetch related data for each client
+                def fetch_all_from_table(table_name):
+                    sub_query = sql.SQL("SELECT * FROM {} WHERE client_id = %s").format(sql.Identifier(table_name))
+                    cur.execute(sub_query, (current_client_id,))
+                    return cur.fetchall()
+                data = {
+                        'client': client,
+                        'skills': fetch_all_from_table('client_skills'),
+                        'certifications': fetch_all_from_table('client_certifications'),
+                        'languages': fetch_all_from_table('client_languages'),
+                        'projects': fetch_all_from_table('client_projects'),
+                        'references': fetch_all_from_table('client_references'),
+                        'work_experience': fetch_all_from_table('client_work_experience')
+                    }
+                return data  # ✅ a dictionary!
+
+
+                
+
+
+@app.route('/download_resume/<int:client_id>')
+def download_resume(client_id):
+    details = get_client_full_details(client_id=client_id)
+    if not details:
+        return "Client not found", 404
+
+    rendered = render_template('resume_template.html', **details)
+    pdf = HTML(string=rendered).write_pdf()
+
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=client_{client_id}_resume.pdf'
+    return response
+
 
 @app.route('/')
 def home():
@@ -71,16 +199,21 @@ def add_client(client_id=None):
                     old_id_doc, old_profile_pic = old_files
 
             # Save new files or keep old ones
-            id_doc = save_file(request.files.get('id_doc')) or old_id_doc
-            profile_pic = save_file(request.files.get('profile_pic')) or old_profile_pic
+            id_doc_file = request.files.get('id_doc')
+            profile_pic_file = request.files.get('profile_pic')
+            
+            id_doc = save_uploaded_file(id_doc_file, 'id_doc', client_id, cur) if id_doc_file and id_doc_file.filename else old_id_doc
+            profile_pic = save_uploaded_file(profile_pic_file, 'profile_pic', client_id, cur) if profile_pic_file and profile_pic_file.filename else old_profile_pic
 
             state = request.form.get('state')
             state_other = request.form.get('state_other')
             country = request.form.get('country')
-            country_other_ = request.form.get('country_other')
+            country_other = request.form.get('country_other')
 
-            final_state = state_other if state == "other" else state
-            final_country = country_other_ if country == "other" else country
+# Case-insensitive check to ensure "Other", "other", etc. all work
+            final_state = state_other if state and state.strip().lower() == "other" else state
+            final_country = country_other if country and country.strip().lower() == "other" else country
+
             data = {
                 'first_name': request.form.get('first_name'),
                 'middle_name': request.form.get('middle_name'),
@@ -171,17 +304,19 @@ def add_client(client_id=None):
                 used_id = cur.fetchone()[0]
 
             # Insert related data (work experience, skills, etc) for both add and edit
-            work_exps = zip(
-                request.form.getlist('job_title[]'),
-                request.form.getlist('company_name[]'),
-                request.form.getlist('industry[]'),
-                request.form.getlist('work_start_date[]'),
-                request.form.getlist('work_end_date[]'),
-                request.form.getlist('responsibilities[]'),
-                request.form.getlist('achievements[]')
-            )
+            job_titles = request.form.getlist('job_title[]')
+            company_names = request.form.getlist('company_name[]')
+            industries = request.form.getlist('industry[]')
+            start_dates = request.form.getlist('work_start_date[]')
+            end_dates = request.form.getlist('work_end_date[]')
+            responsibilities = request.form.getlist('responsibilities[]')
+            achievements = request.form.getlist('achievements[]')
+
+# Ensure all lists are of the same length
+            work_exps = zip(job_titles, company_names, industries, start_dates, end_dates, responsibilities, achievements)
+
             for title, company, industry, start, end, resp, achieve in work_exps:
-                if title.strip():
+                if title.strip():  # You can add more validations if needed
                     cur.execute("""
                         INSERT INTO client_work_experience (
                             client_id, job_title, company_name, industry,
@@ -189,28 +324,33 @@ def add_client(client_id=None):
                         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """, (used_id, title, company, industry, start, end, resp, achieve))
 
-            skills = zip(
-                request.form.getlist('skill_name[]'),
-                request.form.getlist('skill_level[]'),
-                request.form.getlist('skill_years[]')
-            )
+            skill_names = request.form.getlist('skill_name[]')
+            skill_levels = request.form.getlist('skill_level[]')
+            skill_years = request.form.getlist('skill_years[]')
+
+            skills = zip(skill_names, skill_levels, skill_years)
+
             for name, level, years in skills:
-                if name.strip():
+                if name.strip():  # Ensure skill name isn't blank
                     cur.execute("""
                         INSERT INTO client_skills (client_id, skill_name, skill_level, skill_years)
                         VALUES (%s, %s, %s, %s)
-                    """, (used_id, name, level, years))
+                     """, (used_id, name, level, years))
 
-            certs = zip(
-                request.form.getlist('cert_name[]'),
-                request.form.getlist('cert_org[]'),
-                request.form.getlist('cert_issue_date[]'),
-                request.form.getlist('cert_expiry_date[]')
-            )
+
+            cert_names = request.form.getlist('cert_name[]')
+            cert_orgs = request.form.getlist('cert_org[]')
+            cert_issues = request.form.getlist('cert_issue_date[]')
+            cert_expires = request.form.getlist('cert_expiry_date[]')
+
+            certs = zip(cert_names, cert_orgs, cert_issues, cert_expires)
+
             for name, org, issue, expiry in certs:
-                if name.strip():
+                if name.strip():  # Avoid blank entries
                     cur.execute("""
-                        INSERT INTO client_certifications (client_id, cert_name, cert_org, cert_issue_date, cert_expiry_date)
+                        INSERT INTO client_certifications (
+                        client_id, cert_name, cert_org, cert_issue_date, cert_expiry_date
+                        )
                         VALUES (%s, %s, %s, %s, %s)
                     """, (used_id, name, org, issue or None, expiry or None))
 
@@ -305,28 +445,25 @@ def delete_client(id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form['username']
+        password = request.form['password']
 
-        if username == 'admin' and password == 'admin123':
+        if username == ADMIN_USERNAME and bcrypt.checkpw(password.encode('utf-8'), ADMIN_HASHED_PASSWORD.encode('utf-8')):
             session['admin_logged_in'] = True
-            return redirect(url_for('view_clients'))
+            flash('Welcome, Admin!', 'success')
+            return redirect(url_for('view_clients'))  
         else:
-            flash("Invalid credentials. Try again.", "danger")
+            flash('Invalid username or password', 'danger')
+            return redirect(url_for('login'))
 
-    return render_template("login.html")
+    return render_template('login.html')
+
 
 @app.route('/logout')
 def logout():
     session.pop('admin_logged_in', None)
     return redirect(url_for('home'))
 
-def save_file(file):
-    if file and file.filename:
-        path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(path)
-        return file.filename
-    return None
 
 if __name__ == '__main__':
     app.run(debug=True)
