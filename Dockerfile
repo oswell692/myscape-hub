@@ -1,13 +1,22 @@
+# Use WeasyPrint's official Docker image
 FROM weasyprint/weasyprint
 
-# Copy your app's files into the container
-COPY . /app
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Set the working directory
+# Set work directory
 WORKDIR /app
 
-# Install Python dependencies
+# Copy project files
+COPY . /app/
+
+# Install dependencies
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Run the Flask app with Gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
+# Expose the port Flask runs on
+EXPOSE 8000
+
+# Run the application
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
